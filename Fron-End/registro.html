@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .registre {
+            padding: 10px 15px;
+            width: 100%;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group .registre button:hover {
+            background-color: #0056b3;
+        }
+        .button_eye {
+            position: absolute;
+            right: 4px;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .message {
+            margin-top: 15px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Registro de Usuario</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="firstName">Nombre:</label>
+                <input type="text" id="firstName" name="firstName" required minlength="3" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="lastName">Apellido:</label>
+                <input type="text" id="lastName" name="lastName" required minlength="3" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="userName">Nombre de Usuario:</label>
+                <input type="text" id="userName" name="userName" required minlength="3" maxlength="15">
+            </div>
+            <div class="form-group">
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" placeholder="Contraseña" required minlength="6" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{6,}$" style="padding-right: 30px;">
+                    <button type="button" id="buttonpassword" aria-label="Show password" class="button_eye" style="--height: 24px; --width: 24px;">
+                        <svg preserveAspectRatio="xMidYMin" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="css-492dz9" style="--size: 24px; --rotate: 0deg; width: 24px; height: 24px;">
+                            <path fill-rule="evenodd" d="M1.853 12a18.925 18.925 0 0 0 2.57 3.487C6.233 17.42 8.8 19.25 12 19.25s5.766-1.83 7.578-3.763A18.925 18.925 0 0 0 22.148 12a18.924 18.924 0 0 0-2.57-3.487C17.766 6.58 15.2 4.75 12 4.75S6.234 6.58 4.422 8.513A18.924 18.924 0 0 0 1.852 12ZM23 12l.67-.336v-.003l-.004-.006-.01-.02a11.896 11.896 0 0 0-.187-.345 20.43 20.43 0 0 0-2.796-3.802C18.733 5.419 15.8 3.249 12 3.249S5.266 5.42 3.328 7.487a20.425 20.425 0 0 0-2.796 3.802 11.845 11.845 0 0 0-.187.345l-.011.021-.003.006-.001.002v.001L1 12l-.67-.335a.75.75 0 0 0 0 .67L1 12l-.67.336v.003l.004.006.01.02.04.076a18.235 18.235 0 0 0 .72 1.216 20.426 20.426 0 0 0 2.224 2.856C5.266 18.58 8.2 20.75 12 20.75c3.8 0 6.734-2.17 8.672-4.237a20.43 20.43 0 0 0 2.796-3.802 11.896 11.896 0 0 0 .187-.345l.011-.021.003-.006.001-.002v-.001L23 12Zm0 0 .67.335a.75.75 0 0 0 0-.67L23 12ZM12 9.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM8.25 12a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0Z" clip-rule="evenodd">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="button" class="registre" onclick="registerUser()">Registrar</button>
+            </div>
+            <div class="message" id="message"></div>
+        </form>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const togglePasswordButton = document.getElementById('buttonpassword');
+        togglePasswordButton.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        });
+        async function registerUser() {
+            const form = document.getElementById('registerForm');
+            const formData = new FormData(form);
+            const data = {
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                userName: formData.get('userName'),
+                email: formData.get('email'),
+                password: formData.get('password')
+            };
+            try {
+                const response = await fetch('http://localhost:3000/api/v1/private/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('message').textContent = "Usuario registrado correctamente!";
+                    setTimeout(async () => {
+                        window.location.href = 'index.html';
+                    }, 2500);
+                } else {
+                    document.getElementById('message').textContent = result.message || "Error en el registro";
+                }
+            } catch (error) {
+                document.getElementById('message').textContent = "Error en el registro";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .LogOut {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #19b648;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 10px 0;
+            color: #555;
+            font-size: 1.5em;
+            font-weight: normal;
+        }
+
+        .product {
+            position: relative;
+            /* Ensure the button is positioned relative to the product div */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px;
+            padding: 10px;
+            width: 160px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            flex: 0 0 auto;
+            padding-bottom: 50px;
+            /* Add padding to avoid overlap with the button */
+        }
+
+        .product img {
+            max-width: 70%;
+            height: 140px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            object-fit: contain;
+        }
+
+        .product h2 {
+            font-size: 0.8em;
+            margin: 1px 0;
+            max-width: 100%;
+            word-break: break-word;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tooltip::after {
+            content: attr(data-fulltext);
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            z-index: 1;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip-text {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 1;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltip-text {
+            opacity: 1;
+        }
+
+        .product p {
+            color: #030303;
+            font-size: 1em;
+            margin: 5px 0;
+        }
+
+        .product button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 8px 0;
+            position: absolute;
+            left: 12px;
+            bottom: 0;
+            width: calc(100% - 20px);
+            /* Adjust width to fit within the padding */
+        }
+
+        .product button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Tienda de Productos</h1>
+    <h2>Productos</h2>
+    <button class="LogOut" id="LogOut">LogOut</button>
+    <div id="products-container" class="container"></div>
+
+    <script>
+        async function fetchProducts() {
+            try {
+                const response = await fetch('http://localhost:3000/api/v1/products', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                const products = await response.json();
+                displayProducts(products.result);
+                initialLineTooltips();
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            };
+        };
+        // <h2 >${product.productName || 'Producto sin nombre'}</h2>
+        function displayProducts(products) {
+            const container = document.getElementById('products-container');
+            products.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product';
+                productElement.innerHTML = `
+                    <span style="display:none;" class="product-id">${product.productID}</span>
+                    <img src="${product.image || 'default-image.jpg'}" alt="${product.productName || 'Producto sin nombre'}">
+                    <h2 class="tooltip" data-fulltext="${product.productName}">${product.productName}</h2>
+                    <p>$${product.price}</p>
+                    <label for="quantity">Cantidad:</label>
+                    <select id="quantity" name="quantity">
+                        ${[...Array(10).keys()].map(i => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+                    </select>
+                    <button>Añadir al carrito</button>
+                `;
+                container.appendChild(productElement);
+            });
+        };
+        function initialLineTooltips() {
+            const tooltips = document.querySelectorAll('.tooltip');
+            tooltips.forEach(tooltip => {
+                tooltip.addEventListener('mouseenter', function (event) {
+                    const tooltipText = this.getAttribute('data-fulltext');
+                    const tooltipElement = document.createElement('div');
+                    tooltipElement.className = 'tooltip-text';
+                    tooltipElement.innerText = tooltipText;
+                    document.body.appendChild(tooltipElement);
+                    const rect = this.getBoundingClientRect();
+                    const tooltipRect = tooltipElement.getBoundingClientRect();
+                    const screenWidth = window.innerWidth;
+                    const screenHeight = window.innerHeight;
+                    const cursorX = event.clientX;
+                    let left;
+                    let top = rect.top + window.scrollY + rect.height;
+                    if (cursorX < screenWidth / 2) {
+                        left = rect.left + window.scrollX + rect.width;
+                    } else {
+                        left = rect.left + window.scrollX - tooltipRect.width / 5;
+                    }
+                    if (top + tooltipRect.height > screenHeight) {
+                        top = rect.top + window.scrollY - tooltipRect.height;
+                    }
+                    tooltipElement.style.left = `${left}px`;
+                    tooltipElement.style.top = `${top}px`;
+                    tooltipElement.style.opacity = '1';
+                });
+                tooltip.addEventListener('mouseleave', function () {
+                    const tooltipElement = document.querySelector('.tooltip-text');
+                    if (tooltipElement) {
+                        tooltipElement.remove();
+                    }
+                });
+            });
+        }
+        fetchProducts();
+        document.querySelector('.LogOut').addEventListener('click', async function () {
+            try {
+                const response = await fetch('http://localhost:3000/api/v1/private/logout', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                } else {
+                    console.error('Error during logout');
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
